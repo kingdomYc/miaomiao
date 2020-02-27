@@ -1,6 +1,7 @@
 <template>
     <div class="city_body">
-        <div class="city_list">
+
+        <!-- <div class="city_list">
             <div class="city_hot">
                 <h2>热门城市</h2>
                 <ul class="clearfix">
@@ -79,13 +80,106 @@
                 <li>D</li>
                 <li>E</li>
             </ul>
+        </div> -->
+
+        <div class="city_list">
+            <div class="city_hot">
+                <h2>热门城市</h2>
+                <ul class="clearfix">
+                    <li v-for="item in hotList" :key="item.id">{{item.nm}}</li>
+                </ul>
+            </div>
+            <div class="city_sort" ref="city_sort">
+                <div v-for="item in cityList" :key="item.index">
+                    <h2>{{item.index}}</h2>
+                    <ul>
+                        <li v-for="obj in item.list" :key="obj.id">{{obj.nm}}</li>           
+                    </ul>
+                </div>          	
+            </div>
+        </div>
+        <div class="city_index">
+            <ul>
+                <!-- <li v-for="item in cityList" :key="item.index" @touchstart="handToIndex(index)">{{item.index}}</li> -->
+                <li v-for="(item,index) in cityList" :key="item.index" @touchstart="handToIndex(index)">{{item.index}}</li>
+            </ul>
         </div>
     </div>
 </template>
 
 <script>
 export default {
-    name:"City"
+    name:"City",
+    data () {
+      return {
+        cityList: [],
+        hotList: [],
+      }
+    },
+    mounted(){
+        this.axios.get('/api/cityList').then((res) => {
+            if(res.data.msg === "ok"){
+                const data = res.data.data.cities
+                const {cityList,hotList} = this.formatCityList(data)
+                this.cityList = cityList
+                this.hotList = hotList
+            }
+            console.log(res);
+        });
+    },
+    methods:{
+        formatCityList(cities){
+            const cityList  = [];
+            const hotList = [];
+            for(let i =0; i < cities.length;i++){
+                if(cities[i].isHot === 1){
+                    hotList.push(cities[i]);
+                }
+            }
+            //const cityList2  = [1,2];
+            function toCom(firstLetter){
+                for(let i = 0; i < cityList.length;i++){
+                    if(cityList[i].index === firstLetter){
+                        return false;
+                    }
+                }
+                return true
+            }
+            //const hotList = [];
+            for(let i = 0; i < cities.length;i++){
+                const firstLetter = cities[i].py.substring(0,1).toUpperCase();
+                if(toCom(firstLetter)){
+                    cityList.push({index:firstLetter,list:[{nm:cities[i].nm,id:cities[i].id}]})
+                }else{
+                    for(let j = 0; j < cityList.length;j++){
+                        if(cityList[j].index === firstLetter){
+                            cityList[j].list.push({nm:cities[i].nm,id:cities[i].id});
+                        }
+                    }
+                }
+            }
+            cityList.sort((n1,n2) => {
+                if(n1.index > n2.index){
+                    return 1
+                }
+                else if(n1.index < n2.index){
+                    return -1
+                }else{
+                    return 0
+                }
+            })
+            console.log(hotList)
+            console.log(cityList);
+            //console.log(cityList2);
+            return {
+                cityList,hotList
+            }
+        },
+        handToIndex(index){
+            const h2 = this.$refs.city_sort.getElementsByTagName("h2");
+            this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
+        }
+    }
 }
 </script>
 
