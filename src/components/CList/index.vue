@@ -1,22 +1,27 @@
 <template>
     <div class="cinema_body">
-        <ul>
-        <li v-for="item in cinemaList" :key="item.id">
-            <div>
-            <span>{{item.nm}}</span>
-            <span class="q"><span class="price">{{item.sellPrice}}</span> 元起</span>
-            </div>
-            <div class="address">
-            <span>{{item.addr}}</span>
-            <span>{{item.distance}}</span>
-            </div>
-            <div class="card">
-                <div v-for="(num,key) in item.tag" :key="key" :class="key | classCard">{{key | formatCard}}</div>
-                <!-- <div>小吃</div>
-                <div>折扣卡</div> -->
-            </div>
-        </li>
-        </ul>
+        <Loading v-if="isLoading" />
+        <Scroller v-else :handleToScroll="handleToScroll" :handleToTouchEnd="handleToTouchEnd">
+            <ul>
+                <li class="pullDown">{{pullDownMsg}}</li>
+                <li v-for="item in cinemaList" :key="item.id">
+                    <div>
+                    <span>{{item.nm}}</span>
+                    <span class="q"><span class="price">{{item.sellPrice}}</span> 元起</span>
+                    </div>
+                    <div class="address">
+                    <span>{{item.addr}}</span>
+                    <span>{{item.distance}}</span>
+                    </div>
+                    <div class="card">
+                        <div v-for="(num,key) in item.tags" :key="key" :class=" key | classCard ">{{ key | formatCard }}</div>
+                        <!-- <div v-for="(num,key) in item.tag" :key="key" :class="key | classCard">{{key | formatCard}}</div> -->
+                        <!-- <div>小吃</div>
+                        <div>折扣卡</div> -->
+                    </div>
+                </li>
+            </ul>
+        </Scroller>
     </div>
 </template>
 
@@ -25,17 +30,25 @@ export default {
     name:'Clist',
     data(){
         return{
-            cinemaList:[]
+            cinemaList:[],
+            pullDownMsg: "",
+            isLoading: true,
+            precCityId: -1
         }
     },
-    mounted(){
-        this.axios.get("/api/cinemaList?city=10").then((res) =>{
-            if(res.data.msg === "ok"){
-                this.cinemaList = res.data.data.cinemas;
+    activated(){
+        const cityId = this.$store.state.city.id
+        if(this.precCityId === cityId){return;}
+        this.isLoading = true;
+        this.axios.get("/movienew/selectMulti?pageNo=0&pageSize=10").then((res) =>{
+            if(res.data.code == "0"){
+                this.cinemaList = res.data.data;
+                this.isLoading = false
+                this.precCityId = cityId
             }
         })
     },
-    filter:{
+    filters:{
         formatCard(key){
             const card = [
                 { key : 'allowRefund' , value : '改签' },
@@ -63,6 +76,29 @@ export default {
                 }
             }
             return '';
+        }
+    },
+    methods:{
+        handleToDetail(){
+            console.log("123");
+        },
+        handleToScroll(pos){
+            if(pos.y > 30){
+                this.pullDownMsg = "正在更新中"
+            }
+        },
+        handleToTouchEnd(pos){
+            if(pos.y > 30){
+                this.axios.get("/movienew/selectMulti?pageNo=0&pageSize=6").then((res) => {
+                    if(res.data.code == "0"){
+                        this.pullDownMsg = "更新成功";
+                        setTimeout(() => {
+                            this.comingList = res.data.data;
+                            this.pullDownMsg = "";
+                        },1000)                      
+                    }
+                })
+            }
         }
     }
 }
