@@ -7,7 +7,7 @@
               <span>大连</span><i class="iconfont icon-lower-triangle"></i>
             </div> -->
             <router-link tag="div" to="/movies/city" class="city_name">
-              <span>大连</span><i class="iconfont icon-lower-triangle"></i>
+              <span>{{ $store.state.city.nm }}</span><i class="iconfont icon-lower-triangle"></i>
             </router-link>
             <div class="hot_swtich">
               <!-- <div class="hot_item active">正在热映</div>
@@ -31,17 +31,63 @@
           </keep-alive>
         </div>
       <tabBar /> 
+      <!-- <msgBox /> -->
   </div>
 </template>
 
 <script>
 import Header from '@/components/header'
 import tabBar from '@/components/tabBar'
+import { msgBox } from '@/components/ts'
+// import msgBox from '@/components/ts/MsgBox'
 export default {
   name:'movies',
   components:{
     Header,
-    tabBar
+    tabBar,
+    //msgBox
+    // msgBox
+  },
+  mounted(){
+    setTimeout(() => {
+      this.axios.get('/api/getLocation').then((res) => {
+        if(res.data.msg === 'ok'){
+            const nm = res.data.data.nm
+            const id = res.data.data.id
+            console.log(typeof this.$store.state.city.id,typeof id,this.$store.state.city.id == id)
+            if(this.$store.state.city.id == id){
+              return
+            }
+            msgBox({
+            title: '定位',
+            content: nm,
+            cancel: '取消',
+            ok: '切换定位',
+            handleCancel(){
+              console.log(1)
+            },
+            handleOk(){
+              window.localStorage.setItem('nowNm',nm)
+              window.localStorage.setItem('nowId',id)
+              window.location.reload()
+            }
+          })
+        }
+      })
+    },2000)
+    
+    // msgBox({
+    //   title: '定位',
+    //   content: '沈阳',
+    //   cancel: '取消',
+    //   ok: '切换定位',
+    //   handleCancel(){
+    //     console.log(1)
+    //   },
+    //   handleOk(){
+    //     console.log('ok')
+    //   }
+    // })
   }
 }
 </script>

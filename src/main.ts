@@ -10,6 +10,12 @@ Vue.filter('setWH',(url: string , arg: string)=>{
   return url.replace(/w\.h/,arg);
 });
 
+import Scroller from "@/components/scroller/index.vue"
+Vue.component("Scroller",Scroller);
+
+import Loading from '@/components/Loading/index.vue'
+Vue.component('Loading',Loading)
+
 Vue.config.productionTip = false
 
 new Vue({

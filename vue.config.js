@@ -23,6 +23,10 @@ module.exports = {
                 target : 'http://39.97.33.178',
                 changeOrigin : true,
             },
+            '/movienew' : {
+                target : 'http://localhost:8081',
+                changeOrigin : true,
+            },
         }
     }
 }

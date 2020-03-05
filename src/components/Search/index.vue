@@ -47,8 +47,9 @@ export default {
             let that;
             that = {};
             that = this;
+            const cityId = this.$store.state.city.id
+            if(this.precCityId === cityId){return;}
             this.cancelRequest();
-
             this.axios.get('/api/searchList?cityId=10&kw=' + newVal,{
                 cancelToken: new this.axios.CancelToken(function(c){
                         that.source = c
